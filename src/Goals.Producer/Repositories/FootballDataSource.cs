@@ -80,6 +80,7 @@ namespace Goals.Producer.Repositories
             async Task<FootballMatches> GetRawContent() =>
                 await JsonSerializer.DeserializeAsync<FootballMatches>
                 (
+                    // TODO: hard coded test dates
                     await _httpClient.GetStreamAsync("matches?competitions=2021&dateFrom=2021-01-02&dateTo=2021-01-04&status=LIVE,IN_PLAY,FINISHED"),
                     _jsonSerializerOptions
                 )

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 
@@ -12,6 +13,7 @@ namespace Goals.Producer.Repositories
     public record FootballMatch
     (
         int Id,
+        DateTime LastUpdated,
         FootballMatchTeam HomeTeam,
         FootballMatchTeam AwayTeam,
         string Status,
