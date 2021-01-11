@@ -17,7 +17,11 @@ namespace Goals.Consumer
 {
     public static class GoalsConsumer
     {
-        static readonly string _consumerGroupId = "Goals.Consumer.000";
+        // Hack: We have to read the entire queue each time to rebuild state.
+        // A new group id ensures earlier messages are not hidden from us.
+        static readonly string _groupId = $"Goals.Consumer.{ Guid.NewGuid().ToString() }";
+
+        static readonly List<FootballMatch> _footballMatches = new List<FootballMatch>();
 
 
         [FunctionName("GoalsConsumer")]
@@ -27,9 +31,9 @@ namespace Goals.Consumer
         {
             var envVariables = GetEnvironmentVariables();
             var config = GetConfig(envVariables.bootstrapServers, envVariables.username, envVariables.password);
-            var footballMatches = new List<FootballMatch>();
             var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var args = GetArgs();
+            var tableReconstruction = new FootballTableReconstruction();
             using var consumer = new ConsumerBuilder<string, string>(config).Build();
 
 
@@ -38,7 +42,7 @@ namespace Goals.Consumer
                 return new BadRequestObjectResult(args.validationErrorMessage);
 
 
-            log.LogInformation($"Reading from topic: {envVariables.topic}");
+            log.LogInformation($"Reading from topic: {envVariables.topic} ({_groupId})");
             consumer.Subscribe(envVariables.topic);
 
             try
@@ -56,7 +60,7 @@ namespace Goals.Consumer
                     {
                         log.LogInformation($"Item is a match: {item.Message.Value}");
                         var match = JsonSerializer.Deserialize<FootballMatch>(item.Message.Value, jsonOptions);
-                        footballMatches.Add(match);
+                        _footballMatches.Add(match);
                     }
                 }
             }
@@ -69,10 +73,21 @@ namespace Goals.Consumer
                 return new BadRequestObjectResult(string.Format("{ \"error\": \"{0}\" }", e.Message));
             }
 
-
-            consumer.Close();
             log.LogInformation("Topic empty");
-            return new OkObjectResult($"here it is:\n\n");
+            consumer.Close();
+
+            var tables = new List<string>();
+            foreach(var table in tableReconstruction.GetFootballTables(_footballMatches, args.dateFrom, args.dateUntil))
+            {
+                var tableJson = table.ToJson();
+                log.LogInformation(tableJson);
+                tables.Add(tableJson);
+            }
+
+
+
+
+            return new OkObjectResult($"[ {string.Join(",\n", tables)} ]");
 
 
             (string bootstrapServers, string topic, string username, string password) GetEnvironmentVariables() =>
@@ -87,7 +102,7 @@ namespace Goals.Consumer
                 new ConsumerConfig
                 {
                     BootstrapServers = bootstrapServers,
-                    GroupId = _consumerGroupId,
+                    GroupId = _groupId,
                     AutoOffsetReset = AutoOffsetReset.Earliest,
                     EnableAutoCommit = false,
                     SecurityProtocol = SecurityProtocol.SaslSsl,
@@ -113,8 +128,8 @@ namespace Goals.Consumer
                 // Why do this here?
                 // Why do this like this?
                 var validationErrorMessage = string.Empty;
-                validationErrorMessage += dateFrom != DateTime.MinValue ? "Required parameter dateFrom not supplied.  " : "";
-                validationErrorMessage += dateUntil != DateTime.MinValue ? "Required parameter dateUntil not supplied.  " : "";
+                validationErrorMessage += dateFrom == DateTime.MinValue ? "Required parameter dateFrom not supplied.  " : "";
+                validationErrorMessage += dateUntil == DateTime.MinValue ? "Required parameter dateUntil not supplied.  " : "";
                 validationErrorMessage += dateFrom >= dateUntil ? "dateUtil must occur after dateFrom.  " : "";
 
                 return (validationErrorMessage, dateFrom, dateUntil);
@@ -127,16 +142,6 @@ namespace Goals.Consumer
 
                 return false;
             }
-
-
-
-
-
-
-
-
-
-
         }
     }
 }

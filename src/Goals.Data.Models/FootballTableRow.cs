@@ -9,7 +9,6 @@ namespace Goals.Data.Models
             Wins = 0;
             Loses = 0;
             Draws = 0;
-            Points = 0;
         }
 
 
@@ -23,6 +22,20 @@ namespace Goals.Data.Models
 
         public int Draws { get; set; }
 
-        public int Points { get; set; }
+        public int Points => ((Wins * 3) + Draws);
+
+
+        public string ToJson() =>
+            string.Format
+            (
+                "{{ \"position\": {0}, \"team\": \"{1}\", \"won\": {2}, \"drawn\": {3}, \"lost\": {4}, \"points\": {5} }}",
+                Position.ToString().PadRight(2),
+                Team.PadRight(26),
+                Wins.ToString().PadRight(2),
+                Draws.ToString().PadRight(2),
+                Loses.ToString().PadRight(2),
+                Points.ToString().PadRight(2)
+            )
+        ;
     }
 }
