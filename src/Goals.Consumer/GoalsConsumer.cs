@@ -43,13 +43,16 @@ namespace Goals.Consumer
 
             // Log config
             log.LogInformation
+            (
+                string.Format
                 (
-                    string.Format("Config: {{ servers: {0}, topic: {1}, uid: {2}, pwd: {3} }}",
+                    "Config: {{ servers: {0}, topic: {1}, uid: {2}, pwd: {3} }}",
                     envVariables.bootstrapServers,
                     envVariables.topic,
                     envVariables.username,
                     new string('*', envVariables.password.Length)
-                );
+                )
+            );
 
 
             log.LogInformation($"Reading from topic: {envVariables.topic} ({_groupId})");
