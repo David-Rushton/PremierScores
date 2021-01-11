@@ -41,6 +41,16 @@ namespace Goals.Consumer
             if(args.validationErrorMessage != string.Empty)
                 return new BadRequestObjectResult(args.validationErrorMessage);
 
+            // Log config
+            log.LogInformation
+                (
+                    string.Format("Config: {{ servers: {0}, topic: {1}, uid: {2}, pwd: {3} }}",
+                    envVariables.bootstrapServers,
+                    envVariables.topic,
+                    envVariables.username,
+                    new string('*', envVariables.password.Length)
+                );
+
 
             log.LogInformation($"Reading from topic: {envVariables.topic} ({_groupId})");
             consumer.Subscribe(envVariables.topic);
