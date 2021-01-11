@@ -66,7 +66,7 @@ namespace Goals.Consumer
                     // We read messages until the topic throws an exception.
                     // At that point we _assume_ we have reached the end of the queue.
                     // Next time the consumer should persist to an intermidate store.
-                    var item = consumer.Consume(new TimeSpan(0, 0, 5));
+                    var item = consumer.Consume(new TimeSpan(0, 0, 30));
 
                     log.LogInformation($"Read item from topic: {item.Message.Key}");
                     if(IsFootballMatchMessage(item.Message.Key, item.Message.Value))
