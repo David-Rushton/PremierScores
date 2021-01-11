@@ -29,12 +29,12 @@ namespace Goals.Data.Models
             string.Format
             (
                 "{{ \"position\": {0}, \"team\": \"{1}\", \"won\": {2}, \"drawn\": {3}, \"lost\": {4}, \"points\": {5} }}",
-                Position.ToString().PadRight(2),
-                Team.PadRight(26),
-                Wins.ToString().PadRight(2),
-                Draws.ToString().PadRight(2),
-                Loses.ToString().PadRight(2),
-                Points.ToString().PadRight(2)
+                Position.ToString().PadLeft(2),
+                Team.PadRight(27),
+                Wins.ToString().PadLeft(2),
+                Draws.ToString().PadLeft(2),
+                Loses.ToString().PadLeft(2),
+                Points.ToString().PadLeft(2)
             )
         ;
     }
