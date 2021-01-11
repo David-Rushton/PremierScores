@@ -17,6 +17,8 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
+
+    <Content Include="confluent_cloud_cacert.pem" CopyToOutputDirectory="Always"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Goals.Data.Models\Goals.Data.Models.csproj" />

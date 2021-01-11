@@ -66,7 +66,7 @@ namespace Goals.Consumer
                     // We read messages until the topic throws an exception.
                     // At that point we _assume_ we have reached the end of the queue.
                     // Next time the consumer should persist to an intermidate store.
-                    var item = consumer.Consume(new TimeSpan(0, 0, 30));
+                    var item = consumer.Consume(new TimeSpan(0, 0, 5));
 
                     log.LogInformation($"Read item from topic: {item.Message.Key}");
                     if(IsFootballMatchMessage(item.Message.Key, item.Message.Value))
@@ -77,9 +77,10 @@ namespace Goals.Consumer
                     }
                 }
             }
-            catch(NullReferenceException)
+            catch(NullReferenceException e)
             {
                 log.LogInformation($"Topic { envVariables.topic } exhausted.");
+                log.LogInformation(e.Message);
             }
             catch(Exception e)
             {
@@ -121,7 +122,8 @@ namespace Goals.Consumer
                     SecurityProtocol = SecurityProtocol.SaslSsl,
                     SaslMechanism = SaslMechanism.Plain,
                     SaslUsername = username,
-                    SaslPassword = password
+                    SaslPassword = password,
+                    SslCertificateLocation = "confluent_cloud_cacert.pem"
                 }
             ;
 
